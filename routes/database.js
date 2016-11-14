@@ -19,9 +19,10 @@ function postWateringHistory(req, res, next) {
     const waterId = req.body.waterId;
     const deviceId = req.body.deviceId;
     const queryParams = [waterId, deviceId];
+    //console.log(queryParams);
 
     connection.query(postWateringHistoryQuery, queryParams, function(err, rows, fields) {
-        if (err) {
+        if (err || rows.affectedRows == 0) {
             res.sendStatus(500);
         } else {
             res.sendStatus(200);
@@ -59,6 +60,25 @@ function getDevicesByUserId(req, res, next) {
     const queryParams = [userId];
     //console.log(queryParams);
     connection.query(getDevicesByUserIdQUERY, queryParams, function(err, rows, fields) {
+        if(err) {
+                throw err;
+        }
+        
+        res.json(rows);
+        
+    });
+}
+
+// 기기id로 기기 정보 조회
+const getDeviceInfoByDeviceIdURL = ("/getDeviceInfoByDeviceId/:deviceId");
+const getDeviceInfoByDeviceIdQUERY = ("SELECT deviceId, deviceName, temperature, humidity, light, waterHeight FROM Devices WHERE deviceId = ?");
+
+router.get(getDeviceInfoByDeviceIdURL, getDeviceInfoByDeviceId);
+function getDeviceInfoByDeviceId(req, res, next) {
+    const deviceId = req.params.deviceId;
+    const queryParams = [deviceId];
+    //console.log(queryParams);
+    connection.query(getDeviceInfoByDeviceIdQUERY, queryParams, function(err, rows, fields) {
         if(err) {
                 throw err;
         }
