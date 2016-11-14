@@ -9,31 +9,28 @@ router.get('/', function(req, res, next) {
 });
 */
 
-const limitNum = 5;
 
-const homeURL = ("/");
-const selectPostsQuery = ("SELECT imageId, location, DATE_FORMAT(regiDate, '%Y/%m/%d %H:%i:%s') as regiDate, TIMESTAMPDIFF(SECOND, regiDate, now()) secDiff FROM image ORDER BY regiDate DESC LIMIT " + limitNum);
-const selectCommentsQuery = ("SELECT imageId, author, content, DATE_FORMAT(regiDate, '%Y/%m/%d %H:%i:%s') as regiDate FROM comment ORDER BY regiDate ASC");
+// 물 준 기록 post
+const postWateringHistoryURL = ("/postWateringHistory");
+const postWateringHistoryQuery = ("INSERT INTO WateringHistory (deviceId, hour, minute, amount, date) SELECT deviceId, hour, minute, amount, NOW() FROM WateringInfo WHERE waterId = ? AND deviceId = ?");
 
-const addCommentURL = ("/addComment");
-const addCommentQUERY = ("INSERT INTO comment (imageId, author, content, regiDate) values(?, ?, ?, NOW())");
-const selectCommentsByImageIdQuery = ("SELECT imageId, author, content, DATE_FORMAT(regiDate, '%Y/%m/%d %H:%i:%s') as regiDate FROM comment WHERE imageId = ? ORDER BY regiDate ASC");
+router.post(postWateringHistoryURL, postWateringHistory);
+function postWateringHistory(req, res, next) {
+    const waterId = req.body.waterId;
+    const deviceId = req.body.deviceId;
+    const queryParams = [waterId, deviceId];
 
-const selectMorePostsURL = ("/morePosts/:imageId");
-const selectMorePostsQuery = ("SELECT imageId, location, DATE_FORMAT(regiDate, '%Y/%m/%d %H:%i:%s') as regiDate, TIMESTAMPDIFF(SECOND, regiDate, now()) secDiff FROM image where regiDate < (SELECT regiDate from image where imageId = ?) ORDER BY regiDate DESC LIMIT " + limitNum);
-const selectMoreCommentsQuery = ("SELECT A.imageId imageId, A.author author, A.content content, DATE_FORMAT(A.regiDate, '%Y/%m/%d %H:%i:%s') as regiDate FROM comment A LEFT JOIN image B ON A.imageId = B.imageId where B.regiDate < (SELECT regiDate from image where imageId = ?) ORDER BY A.regiDate ASC");
-
-const setLocationURL = ("/setLocation");
-const selectLocationsQuery = ("SELECT sensorId, location FROM sensor");
-
-const updateLocationURL = ("/updateLocation");
-const updateLocationQUERY = ("UPDATE sensor SET location = ? WHERE sensorId = ?");
-
-const getDateURL = ("/getDate");
+    connection.query(postWateringHistoryQuery, queryParams, function(err, rows, fields) {
+        if (err) {
+            res.sendStatus(500);
+        } else {
+            res.sendStatus(200);
+        }
+    });
+}
 
 
-
-
+// 물 준 기록 조회
 const getWateringHistoriesURL = ("/getWateringHistories/:deviceId");
 const getWateringHistoriesQUERY = ("SELECT deviceId, hour, minute, amount, date FROM WateringHistory WHERE deviceId = ? ORDER BY date DESC");
 
@@ -52,8 +49,9 @@ function getWateringHistories(req, res, next) {
     });
 }
 
+// 아이디별 기기 리스트 조회
 const getDevicesByUserIdURL = ("/getDevicesByUserId/:userId");
-const getDevicesByUserIdQUERY = ("SELECT deviceName FROM Devices WHERE deviceId IN (SELECT deviceId FROM DeviceMatching WHERE userId = ?) ORDER BY deviceName DESC");
+const getDevicesByUserIdQUERY = ("SELECT deviceId, deviceName FROM Devices WHERE deviceId IN (SELECT deviceId FROM DeviceMatching WHERE userId = ?) ORDER BY deviceName DESC");
 
 router.get(getDevicesByUserIdURL, getDevicesByUserId);
 function getDevicesByUserId(req, res, next) {
@@ -71,7 +69,7 @@ function getDevicesByUserId(req, res, next) {
 }
 
 
-
+/*
 //index.ejs 홈
 router.get(homeURL, home);
 function home(req, res, next) {
@@ -198,5 +196,5 @@ function getDateTime(req, res, next) {
     
 
 }
-
+*/
 module.exports = router;
