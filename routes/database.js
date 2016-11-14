@@ -52,7 +52,23 @@ function getWateringHistories(req, res, next) {
     });
 }
 
+const getDevicesByUserIdURL = ("/getDevicesByUserId/:userId");
+const getDevicesByUserIdQUERY = ("SELECT deviceName FROM Devices WHERE deviceId IN (SELECT deviceId FROM DeviceMatching WHERE userId = ?) ORDER BY deviceName DESC");
 
+router.get(getDevicesByUserIdURL, getDevicesByUserId);
+function getDevicesByUserId(req, res, next) {
+    const userId = req.params.userId;
+    const queryParams = [userId];
+    //console.log(queryParams);
+    connection.query(getDevicesByUserIdQUERY, queryParams, function(err, rows, fields) {
+        if(err) {
+                throw err;
+        }
+        
+        res.json(rows);
+        
+    });
+}
 
 
 
