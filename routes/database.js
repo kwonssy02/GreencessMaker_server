@@ -88,6 +88,99 @@ function getDeviceInfoByDeviceId(req, res, next) {
     });
 }
 
+// 라즈베리파이에서 기기의 현재 상태 업데이트
+const updateDeviceInfoURL = ("/updateDeviceInfo");
+const updateDeviceInfoQUERY = ("UPDATE Devices SET temperature = ?, humidity = ?, light = ?, waterHeight = ? WHERE deviceId = ?");
+
+router.post(updateDeviceInfoURL, updateDeviceInfo);
+function updateDeviceInfo(req, res, next) {
+    const deviceId = req.body.deviceId;
+    const temperature = req.body.temperature;
+    const humidity = req.body.humidity;
+    const light = req.body.light;
+    const waterHeight = req.body.waterHeight;
+    const queryParams = [temperature, humidity, light, waterHeight, deviceId];
+    //console.log(queryParams);
+
+    connection.query(updateDeviceInfoQUERY, queryParams, function(err, rows, fields) {
+        if (err || rows.affectedRows == 0) {
+            res.sendStatus(500);
+        } else {
+            res.sendStatus(200);
+        }
+    });
+}
+
+
+// 물 주기 알람 등록 -- 미완료
+const insertWateringInfoURL = ("/insertWateringInfo");
+const insertWateringInfoQUERY = ("INSERT INTO WateringInfo (waterId, deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute, insertedDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+const getNewWaterIdQUERY = ("SELECT max(waterId)+1 as waterId from WateringInfo");
+
+router.post(insertWateringInfoURL, insertWateringInfo);
+function insertWateringInfo(req, res, next) {
+
+    // 트랜잭션 시작
+    connection.beginTransaction(function(err) {
+        if (err) {
+            throw err;
+        }
+
+        // 새로운 waterId 가져오기
+        connection.query(getNewWaterIdQUERY, function(err, rows, fields) {
+            if (err) {
+                console.error(err);
+                res.sendStatus(500);
+            }
+
+            const waterId = rows[0].waterId;
+            const deviceId = req.body.deviceId;
+            const mon = req.body.mon;
+            const tue = req.body.tue;
+            const wed = req.body.wed;
+            const thur = req.body.thur;
+            const fri = req.body.fri;
+            const sat = req.body.sat;
+            const sun = req.body.sun;
+            const amount = req.body.amount;
+            const hour = req.body.hour;
+            const minute = req.body.minute;
+
+            const queryParams = [waterId, deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute];
+            console.log(queryParams);
+
+            connection.query(insertWateringInfoQUERY, queryParams, function(err, rows, fields) {
+                if (err || rows.affectedRows == 0) {
+                    console.error(err);
+                    res.sendStatus(500);
+                }
+
+                //성공시 commit
+                connection.commit(function (err) {
+                    if (err) {
+                        console.error(err);
+                        connection.rollback(function () {
+                           console.error('rollback error');
+                           throw err;
+                        });
+                    }// if err
+                    res.sendStatus(200);
+ 
+                 });
+            });
+        });
+        
+    });
+    
+}
+
+// 물 주기 알람 수정
+
+
+// 물 주기 알람 삭제
+
+
+// 일회성 물주기 데이터 등록
 
 /*
 //index.ejs 홈
