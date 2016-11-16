@@ -89,6 +89,7 @@ function getDeviceInfoByDeviceId(req, res, next) {
 }
 
 // 라즈베리파이에서 기기의 현재 상태 업데이트
+// 업데이트 후 변경된 알람정보 가져와야함..
 const updateDeviceInfoURL = ("/updateDeviceInfo");
 const updateDeviceInfoQUERY = ("UPDATE Devices SET temperature = ?, humidity = ?, light = ?, waterHeight = ? WHERE deviceId = ?");
 
@@ -112,9 +113,9 @@ function updateDeviceInfo(req, res, next) {
 }
 
 
-// 물 주기 알람 등록 -- 미완료
+// 물 주기 알람 등록 - 초기엔 ON 상태
 const insertWateringInfoURL = ("/insertWateringInfo");
-const insertWateringInfoQUERY = ("INSERT INTO WateringInfo (waterId, deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute, insertedDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+const insertWateringInfoQUERY = ("INSERT INTO WateringInfo (waterId, deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute, status, insertedDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW())");
 const getNewWaterIdQUERY = ("SELECT max(waterId)+1 as waterId from WateringInfo");
 
 router.post(insertWateringInfoURL, insertWateringInfo);
@@ -174,140 +175,86 @@ function insertWateringInfo(req, res, next) {
     
 }
 
-// 물 주기 알람 수정
+// 물 주기 알람 수정 - ON 상태로 자동으로 바꿔줌
+const modifyWateringInfoURL = ("/modifyWateringInfo");
+const modifyWateringInfoQUERY = ("UPDATE WateringInfo SET mon = ?, tue = ?, wed = ?, thur = ?, fri = ?, sat = ?, sun = ?, amount = ?, hour = ?, minute = ?, status = 1, modifiedDate = NOW() WHERE waterId = ? AND deviceId = ?");
+
+router.post(modifyWateringInfoURL, modifyWateringInfo);
+function modifyWateringInfo(req, res, next) {
+    
+    const waterId = req.body.waterId;
+    const deviceId = req.body.deviceId;
+    const mon = req.body.mon;
+    const tue = req.body.tue;
+    const wed = req.body.wed;
+    const thur = req.body.thur;
+    const fri = req.body.fri;
+    const sat = req.body.sat;
+    const sun = req.body.sun;
+    const amount = req.body.amount;
+    const hour = req.body.hour;
+    const minute = req.body.minute;
+
+    const queryParams = [mon, tue, wed, thur, fri, sat, sun, amount, hour, minute, waterId, deviceId];
+    console.log(queryParams);
+
+    connection.query(modifyWateringInfoQUERY, queryParams, function(err, rows, fields) {
+        if (err || rows.affectedRows == 0) {
+            console.error(err);
+            res.sendStatus(500);
+        }
+        res.sendStatus(200);
+    });
+}
 
 
 // 물 주기 알람 삭제
+const deleteWateringInfoURL = ("/deleteWateringInfo");
+const deleteWateringInfoQUERY = ("DELETE FROM WateringInfo WHERE waterId = ? AND deviceId = ?");
 
+router.post(deleteWateringInfoURL, deleteWateringInfo);
+function deleteWateringInfo(req, res, next) {
+    
+    const waterId = req.body.waterId;
+    const deviceId = req.body.deviceId;
+
+    const queryParams = [waterId, deviceId];
+    console.log(queryParams);
+
+    connection.query(deleteWateringInfoQUERY, queryParams, function(err, rows, fields) {
+        if (err || rows.affectedRows == 0) {
+            console.error(err);
+            res.sendStatus(500);
+        }
+        res.sendStatus(200);
+    });
+}
+
+
+// 물 주기 알림 status 변경(on/off)
+const changeWateringInfoStatusURL = ("/changeWateringInfoStatus");
+const changeWateringInfoStatusQUERY = ("UPDATE WateringInfo SET status = ? WHERE waterId = ? AND deviceId = ?");
+
+router.post(changeWateringInfoStatusURL, changeWateringInfoStatus);
+function changeWateringInfoStatus(req, res, next) {
+    
+    const waterId = req.body.waterId;
+    const deviceId = req.body.deviceId;
+    const status = req.body.status;
+
+    const queryParams = [status, waterId, deviceId];
+    console.log(queryParams);
+
+    connection.query(changeWateringInfoStatusQUERY, queryParams, function(err, rows, fields) {
+        if (err || rows.affectedRows == 0) {
+            console.error(err);
+            res.sendStatus(500);
+        }
+
+        res.sendStatus(200);
+    });
+}
 
 // 일회성 물주기 데이터 등록
 
-/*
-//index.ejs 홈
-router.get(homeURL, home);
-function home(req, res, next) {
-    var data = {};
-    data['title'] = '코메라: 냄새맡는 카메라';
-    connection.query(selectPostsQuery, function(err, rows, fields) {
-        if(err) {
-            throw err;
-        }
-        data['posts'] = rows;
-		
-		connection.query(selectCommentsQuery, function(err, rows, fields) {
-        	if(err) {
-                throw err;
-        	}
-        	//res.send(rows);
-        	data['comments'] = rows;
-        	res.render('index', data);
-    	});
-    });
-
-}
-
-router.post(addCommentURL, addComment);
-function addComment(req, res, next) {
-    const imageId = req.body.imageId;
-    const author = req.body.author;
-    const content = req.body.content;
-    const queryParams = [imageId, author, content];
-    //console.log(queryParams);
-    connection.query(addCommentQUERY, queryParams, function(err, rows, fields) {
-        if(err) {
-                throw err;
-        }
-		const queryParams2 = [imageId];
-		connection.query(selectCommentsByImageIdQuery, queryParams2, function(err, rows, fields) {
-                if(err) {
-                        throw err;
-                }
-                res.json(rows);
-        });
-    });
-}
-
-router.get(selectMorePostsURL, selectMorePosts);
-function selectMorePosts(req, res, next) {
-    const imageId = req.params.imageId;    
-    const queryParams = [imageId];  
-    var result = {};
-    connection.query(selectMorePostsQuery, queryParams, function(err, rows, fields) {
-        if(err) {
-                throw err;
-        }
-        result["posts"] = rows;
-        const queryParams2 = [imageId];
-        connection.query(selectMoreCommentsQuery, queryParams2, function(err, rows2, fields) {
-                if(err) {
-                        throw err;
-                }
-                result["comments"] = rows2;
-                res.json(result);
-        });
-    });
-}
-
-//index.ejs 홈
-router.get(setLocationURL, setLocation);
-function setLocation(req, res, next) {
-    var data = {};
-    data['title'] = '코메라 센서 위치 수정';
-    connection.query(selectLocationsQuery, function(err, rows, fields) {
-        if(err) {
-            throw err;
-        }
-        data['locations'] = rows;
-        
-        res.render('setLocation', data);
-    });
-
-}
-
-router.post(updateLocationURL, updateLocation);
-function updateLocation(req, res, next) {
-    const sensorId = req.body.sensorId;
-    const loc = req.body.loc;
-    const queryParams = [loc, sensorId];
-    //console.log(queryParams);
-    connection.query(updateLocationQUERY, queryParams, function(err, rows, fields) {
-        if(err) {
-                throw err;
-        }
-        res.redirect(setLocationURL);
-    });
-}
-
-//index.ejs 홈
-router.get(getDateURL, getDateTime);
-function getDateTime(req, res, next) {
-    
-    var date = new Date();
-
-    var hour = date.getHours();
-    hour = (hour < 10 ? "0" : "") + hour;
-
-    var min  = date.getMinutes();
-    min = (min < 10 ? "0" : "") + min;
-
-    var sec  = date.getSeconds();
-    sec = (sec < 10 ? "0" : "") + sec;
-
-    var year = date.getFullYear();
-    year %= 100;
-
-    var month = date.getMonth() + 1;
-    month = (month < 10 ? "0" : "") + month;
-
-    var day  = date.getDate();
-    day = (day < 10 ? "0" : "") + day;
-
-    // res.writeHead(200, {'Content-Type': 'text/html'});
-    var result = {};
-    result["time"] = year+""+month+""+day;
-    res.json(result);
-    
-
-}
-*/
 module.exports = router;
