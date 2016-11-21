@@ -38,7 +38,7 @@ io.on('connection', function (socket) {
                     if(err) {
                             throw err;
                     }
-                    // console.log('deviceInfo='+rows[0]);
+                    console.log('deviceInfo='+rows[0]);
                     socket.emit('DeviceInfo', rows[0]);
                 });
                 
