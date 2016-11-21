@@ -24,18 +24,28 @@ io.on('connection', function (socket) {
     socket.on('phone-join', function (userId) {
         // console.log('device ' + socket.name + ' connected');
         socket.name = 'phone/' + userId;
-	console.log(socket.name + ' joined');	
+	   console.log(socket.name + ' joined');	
     });
 
     socket.on('phone-socket', function (deviceId) {
         var intervalId = setInterval(function(){
             if(socket.connected) {
-                var deviceInfo = getDeviceInfoByDeviceId(deviceId);
-                socket.emit('DeviceInfo', deviceInfo);
+                // var deviceInfo = getDeviceInfoByDeviceId(deviceId);
+                const getDeviceInfoByDeviceIdQUERY = ("SELECT deviceId, deviceName, temperature, humidity, light, waterHeight FROM Devices WHERE deviceId = ?");
+                const queryParams = [deviceId];
+                //console.log(queryParams);
+                connection.query(getDeviceInfoByDeviceIdQUERY, queryParams, function(err, rows, fields) {
+                    if(err) {
+                            throw err;
+                    }
+                    // console.log('deviceInfo='+rows[0]);
+                    socket.emit('DeviceInfo', rows[0]);
+                });
+                
             }else {
                 clearInterval(intervalId);
             }
-        }, 5000);
+        }, 2000);
     });
 
     // 라즈베리파이 디바이스 정보 업데이트
@@ -143,7 +153,7 @@ function updateDeviceConnected(deviceId, connected) {
 }
 
 
-
+/*
 // 기기id로 기기 정보 조회
 const getDeviceInfoByDeviceIdQUERY = ("SELECT deviceId, deviceName, temperature, humidity, light, waterHeight FROM Devices WHERE deviceId = ?");
 
@@ -154,8 +164,9 @@ function getDeviceInfoByDeviceId(deviceId) {
         if(err) {
                 throw err;
         }
-        
+        console.log('row='+rows[0]);
         return rows[0];
     });
 }
+*/
 
