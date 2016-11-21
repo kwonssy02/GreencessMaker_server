@@ -55,7 +55,7 @@ io.on('connection', function (socket) {
 
     // 접속 끊겼을 때
 	socket.on('disconnect', function(){
-        // console.log( socket.name + ' has disconnected from the chat.' + socket.id);
+        console.log( socket.name + ' has disconnected from the chat.' + socket.id);
         var deviceType = socket.name.split("/")[0];
         var deviceId = socket.name.split("/")[1];
         if(deviceType == 'raspberrypi') {
