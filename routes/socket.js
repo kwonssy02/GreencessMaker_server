@@ -16,6 +16,7 @@ io.on('connection', function (socket) {
 	socket.on('raspberrypi-join', function (deviceId) {
 		// console.log('device ' + socket.name + ' connected');
 		socket.name = 'raspberrypi/' + deviceId;
+		console.log(socket.name + ' joined');
 		updateDeviceConnected(deviceId, 1);
 	});
 
@@ -23,7 +24,7 @@ io.on('connection', function (socket) {
     socket.on('phone-join', function (userId) {
         // console.log('device ' + socket.name + ' connected');
         socket.name = 'phone/' + userId;
-
+	console.log(socket.name + ' joined');	
     });
 
     socket.on('phone-socket', function (deviceId) {
