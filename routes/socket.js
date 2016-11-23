@@ -25,7 +25,8 @@ io.on('connection', function (socket) {
         // deviceId를 Set에 등록: 현재 접속 여부
         deviceMap.set(deviceId.toString(), socket);
 
-		updateDeviceConnected(deviceId, 1);
+        // device가 접속 중임을 데이터베이스에 저장한다.
+		//updateDeviceConnected(deviceId, 1);
 	});
 
     // 핸드폰 접속
@@ -35,6 +36,7 @@ io.on('connection', function (socket) {
         console.log(socket.name + ' joined');	
     });
 
+    // 핸드폰이 socket 연결을 통해서 device의 현상태를 받아온다.
     socket.on('phone-socket', function (deviceId) {
         var intervalId = setInterval(function(){
             if(socket.connected) {
@@ -61,17 +63,7 @@ io.on('connection', function (socket) {
 		updateDeviceInfo(deviceInfo);
 	});
 
-    // 접속 끊겼을 때
-	socket.on('disconnect', function(){
-        console.log( socket.name + ' has disconnected from the chat.' + socket.id);
-        var deviceType = socket.name.split("/")[0];
-        var deviceId = socket.name.split("/")[1];
-        if(deviceType == 'raspberrypi') {
-            // deviceSet.delete(deviceId.toString());
-            deviceMap.remove(deviceId.toString());
-            updateDeviceConnected(deviceId, 0);
-        }
-    });
+
 
     // 라즈베리파이 이미지 저장
     socket.on('image', function(data) {
@@ -94,6 +86,27 @@ io.on('connection', function (socket) {
             deviceMap.get(deviceId.toString()).emit('waterNowDevice');
         }else {
             console.log('that is not connected');
+        }
+    });
+
+
+
+
+
+
+
+    // 접속 끊겼을 때
+    socket.on('disconnect', function(){
+        console.log( socket.name + ' has disconnected from the chat(socket id: ' + socket.id + ')');
+        var deviceType = socket.name.split("/")[0];
+        var deviceId = socket.name.split("/")[1];
+        
+        if(deviceType == 'raspberrypi') {
+            // deviceSet.delete(deviceId.toString());
+            deviceMap.remove(deviceId.toString());
+
+            // device가 비접속중임을 데이터베이스에 저장한다.
+            updateDeviceConnected(deviceId, 0);
         }
     });
 
@@ -149,9 +162,9 @@ function updateDeviceInfo(deviceInfo) {
 
     connection.query(updateDeviceInfoQUERY, queryParams, function(err, rows, fields) {
         if (err || rows.affectedRows == 0) {
-            console.log('failed');
+            console.log('device 상태 변경 failed');
         } else {
-            console.log('success');
+            console.log('device 상태 변경 success');
         }
     });
 }
