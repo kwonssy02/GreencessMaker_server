@@ -113,7 +113,32 @@ function updateDeviceInfo(req, res, next) {
 }
 
 
+// 물 주기 알람 조회
+// input  : deviceId
+// output : waterId, deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute, status
+const selectWateringInfoURL = ("/selectWateringInfo/:deviceId");
+const selectWateringInfoQUERY = ("SELECT waterId, deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute, status FROM WateringInfo WHERE deviceId = ? ORDER BY insertedDate DESC");
+
+router.get(selectWateringInfoURL, selectWateringInfo);
+function selectWateringInfo(req, res, next) {
+    const deviceId = req.params.deviceId;
+    const queryParams = [deviceId];
+    //console.log(queryParams);
+    connection.query(selectWateringInfoQUERY, queryParams, function(err, rows, fields) {
+        if(err) {
+                throw err;
+        }
+        
+        res.json(rows);
+        
+    });
+}
+
+
 // 물 주기 알람 등록 - 초기엔 ON 상태
+// input  : waterId, deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute
+// output : 없음
+
 const insertWateringInfoURL = ("/insertWateringInfo");
 const insertWateringInfoQUERY = ("INSERT INTO WateringInfo (waterId, deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute, status, insertedDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW())");
 const getNewWaterIdQUERY = ("SELECT max(waterId)+1 as waterId from WateringInfo");
@@ -176,6 +201,9 @@ function insertWateringInfo(req, res, next) {
 }
 
 // 물 주기 알람 수정 - ON 상태로 자동으로 바꿔줌
+// input  : waterId, deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute
+// output : 없음
+
 const modifyWateringInfoURL = ("/modifyWateringInfo");
 const modifyWateringInfoQUERY = ("UPDATE WateringInfo SET mon = ?, tue = ?, wed = ?, thur = ?, fri = ?, sat = ?, sun = ?, amount = ?, hour = ?, minute = ?, status = 1, modifiedDate = NOW() WHERE waterId = ? AND deviceId = ?");
 
@@ -209,6 +237,9 @@ function modifyWateringInfo(req, res, next) {
 
 
 // 물 주기 알람 삭제
+// input  : waterId, deviceId
+// output : 없음
+
 const deleteWateringInfoURL = ("/deleteWateringInfo");
 const deleteWateringInfoQUERY = ("DELETE FROM WateringInfo WHERE waterId = ? AND deviceId = ?");
 
@@ -232,6 +263,9 @@ function deleteWateringInfo(req, res, next) {
 
 
 // 물 주기 알림 status 변경(on/off)
+// input  : waterId, deviceId, status(0 or 1)
+// output : 없음
+
 const changeWateringInfoStatusURL = ("/changeWateringInfoStatus");
 const changeWateringInfoStatusQUERY = ("UPDATE WateringInfo SET status = ? WHERE waterId = ? AND deviceId = ?");
 

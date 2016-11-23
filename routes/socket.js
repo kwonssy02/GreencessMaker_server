@@ -1,6 +1,7 @@
 var express = require('express');
 var app = express();
 var fs = require('fs');
+var HashMap = require('hashmap');
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var router = express.Router();
@@ -8,7 +9,10 @@ var router = express.Router();
 require('../dbconnection')();
 
 server.listen(8081);
-// console.log('aaaaaaa');
+
+    
+var deviceMap = new HashMap();
+
 io.on('connection', function (socket) {
 	console.log('client connected');
 
@@ -17,6 +21,10 @@ io.on('connection', function (socket) {
 		// console.log('device ' + socket.name + ' connected');
 		socket.name = 'raspberrypi/' + deviceId;
 		console.log(socket.name + ' joined');
+
+        // deviceId를 Set에 등록: 현재 접속 여부
+        deviceMap.set(deviceId.toString(), socket);
+
 		updateDeviceConnected(deviceId, 1);
 	});
 
@@ -24,7 +32,7 @@ io.on('connection', function (socket) {
     socket.on('phone-join', function (userId) {
         // console.log('device ' + socket.name + ' connected');
         socket.name = 'phone/' + userId;
-	   console.log(socket.name + ' joined');	
+        console.log(socket.name + ' joined');	
     });
 
     socket.on('phone-socket', function (deviceId) {
@@ -59,6 +67,8 @@ io.on('connection', function (socket) {
         var deviceType = socket.name.split("/")[0];
         var deviceId = socket.name.split("/")[1];
         if(deviceType == 'raspberrypi') {
+            // deviceSet.delete(deviceId.toString());
+            deviceMap.remove(deviceId.toString());
             updateDeviceConnected(deviceId, 0);
         }
     });
@@ -73,11 +83,23 @@ io.on('connection', function (socket) {
         
     });
 
+    // 물주기 알람 조회
+    socket.on('wateringInfo', function(data) {
+        
+    });
+
+    // 일회성 물주기 이벤트.. 안드로이드에서 waterNow라는 이벤트를 deviceId와 함께 보내준다.
+    socket.on('waterNow', function(deviceId) {
+        if(deviceMap.has(deviceId.toString())) {
+            deviceMap.get(deviceId.toString()).emit('waterNowDevice');
+        }else {
+            console.log('that is not connected');
+        }
+    });
 
 });
 
 module.exports = router;
-
 
 // 라즈베리파이에서 받아온 이미지 저장
 const getNewImageIdQUERY = ("SELECT IFNULL(MAX(imageId), 0)+1 as imageId FROM Images WHERE deviceId = ?");
