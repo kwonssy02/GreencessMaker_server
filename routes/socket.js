@@ -93,6 +93,7 @@ io.on('connection', function (socket) {
             console.log('waterNowSuccesswaterNowSuccess!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
         }else {
             socket.emit('waterNowFail');
+            console.log('waterNowFailwaterNowFailwaterNowFail!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
         }
     });
 
