@@ -12,13 +12,13 @@ router.get('/', function(req, res, next) {
 
 // 물 준 기록 post
 const postWateringHistoryURL = ("/postWateringHistory");
-const postWateringHistoryQuery = ("INSERT INTO WateringHistory (deviceId, hour, minute, amount, date) SELECT deviceId, hour, minute, amount, NOW() FROM WateringInfo WHERE waterId = ? AND deviceId = ?");
+const postWateringHistoryQuery = ("INSERT INTO WateringHistory (deviceId, hour, minute, amount, date) SELECT deviceId, hour, minute, amount, NOW() FROM WateringInfo WHERE deviceId = ?");
 
 router.post(postWateringHistoryURL, postWateringHistory);
 function postWateringHistory(req, res, next) {
-    const waterId = req.body.waterId;
+
     const deviceId = req.body.deviceId;
-    const queryParams = [waterId, deviceId];
+    const queryParams = [deviceId];
     //console.log(queryParams);
 
     connection.query(postWateringHistoryQuery, queryParams, function(err, rows, fields) {
@@ -115,9 +115,9 @@ function updateDeviceInfo(req, res, next) {
 
 // 물 주기 알람 조회
 // input  : deviceId
-// output : waterId, deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute, status
+// output : deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute, status
 const selectWateringInfoURL = ("/selectWateringInfo/:deviceId");
-const selectWateringInfoQUERY = ("SELECT waterId, deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute, status FROM WateringInfo WHERE deviceId = ? ORDER BY insertedDate DESC");
+const selectWateringInfoQUERY = ("SELECT deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute, status FROM WateringInfo WHERE deviceId = ? ORDER BY insertedDate DESC");
 
 router.get(selectWateringInfoURL, selectWateringInfo);
 function selectWateringInfo(req, res, next) {
@@ -134,7 +134,7 @@ function selectWateringInfo(req, res, next) {
     });
 }
 
-
+/*
 // 물 주기 알람 등록 - 초기엔 ON 상태
 // input  : waterId, deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute
 // output : 없음
@@ -199,18 +199,18 @@ function insertWateringInfo(req, res, next) {
     });
     
 }
+*/
 
 // 물 주기 알람 수정 - ON 상태로 자동으로 바꿔줌
-// input  : waterId, deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute
+// input  : deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute
 // output : 없음
 
 const modifyWateringInfoURL = ("/modifyWateringInfo");
-const modifyWateringInfoQUERY = ("UPDATE WateringInfo SET mon = ?, tue = ?, wed = ?, thur = ?, fri = ?, sat = ?, sun = ?, amount = ?, hour = ?, minute = ?, status = 1, modifiedDate = NOW() WHERE waterId = ? AND deviceId = ?");
+const modifyWateringInfoQUERY = ("UPDATE WateringInfo SET mon = ?, tue = ?, wed = ?, thur = ?, fri = ?, sat = ?, sun = ?, amount = ?, hour = ?, minute = ?, status = 1, modifiedDate = NOW() WHERE deviceId = ?");
 
 router.post(modifyWateringInfoURL, modifyWateringInfo);
 function modifyWateringInfo(req, res, next) {
     
-    const waterId = req.body.waterId;
     const deviceId = req.body.deviceId;
     const mon = req.body.mon;
     const tue = req.body.tue;
@@ -223,7 +223,7 @@ function modifyWateringInfo(req, res, next) {
     const hour = req.body.hour;
     const minute = req.body.minute;
 
-    const queryParams = [mon, tue, wed, thur, fri, sat, sun, amount, hour, minute, waterId, deviceId];
+    const queryParams = [mon, tue, wed, thur, fri, sat, sun, amount, hour, minute, deviceId];
     console.log(queryParams);
 
     connection.query(modifyWateringInfoQUERY, queryParams, function(err, rows, fields) {
@@ -235,7 +235,7 @@ function modifyWateringInfo(req, res, next) {
     });
 }
 
-
+/*
 // 물 주기 알람 삭제
 // input  : waterId, deviceId
 // output : 없음
@@ -260,23 +260,23 @@ function deleteWateringInfo(req, res, next) {
         res.sendStatus(200);
     });
 }
+*/
 
 
 // 물 주기 알림 status 변경(on/off)
-// input  : waterId, deviceId, status(0 or 1)
+// input  : deviceId, status(0 or 1)
 // output : 없음
 
 const changeWateringInfoStatusURL = ("/changeWateringInfoStatus");
-const changeWateringInfoStatusQUERY = ("UPDATE WateringInfo SET status = ? WHERE waterId = ? AND deviceId = ?");
+const changeWateringInfoStatusQUERY = ("UPDATE WateringInfo SET status = ? WHERE deviceId = ?");
 
 router.post(changeWateringInfoStatusURL, changeWateringInfoStatus);
 function changeWateringInfoStatus(req, res, next) {
     
-    const waterId = req.body.waterId;
     const deviceId = req.body.deviceId;
     const status = req.body.status;
 
-    const queryParams = [status, waterId, deviceId];
+    const queryParams = [status, deviceId];
     console.log(queryParams);
 
     connection.query(changeWateringInfoStatusQUERY, queryParams, function(err, rows, fields) {
@@ -289,6 +289,26 @@ function changeWateringInfoStatus(req, res, next) {
     });
 }
 
-// 일회성 물주기 데이터 등록
+
+// device에서 찍은 이미지 리스트 조회
+// input  : deviceId
+// output : deviceId, imageId
+const getImagesByDeviceIdURL = ("/getImagesByDeviceId/:deviceId");
+const getImagesByDeviceIdQUERY = ("SELECT deviceId, imageId FROM Images WHERE deviceId = ? ORDER BY imageId DESC");
+
+router.get(getImagesByDeviceIdURL, getImagesByDeviceId);
+function getImagesByDeviceId(req, res, next) {
+    const deviceId = req.params.deviceId;
+    const queryParams = [deviceId];
+    //console.log(queryParams);
+    connection.query(getImagesByDeviceIdQUERY, queryParams, function(err, rows, fields) {
+        if(err) {
+                throw err;
+        }
+        
+        res.json(rows);
+        
+    });
+}
 
 module.exports = router;

@@ -10,7 +10,7 @@ require('../dbconnection')();
 
 server.listen(8081);
 
-    
+// 접속중인 디바이스를 저장하는 map(key: deviceId(string), value: socket(socket instance))
 var deviceMap = new HashMap();
 
 io.on('connection', function (socket) {
