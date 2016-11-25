@@ -70,7 +70,7 @@ io.on('connection', function (socket) {
         
         var buffer = data["buffer"];
         var deviceId = socket.name.split("/")[1];
-        // console.log('image received: ' + buffer);
+        console.log('image received: ' + buffer);
         saveImage(deviceId, buffer);
         
     });
@@ -85,7 +85,7 @@ io.on('connection', function (socket) {
         if(deviceMap.has(deviceId.toString())) {
             deviceMap.get(deviceId.toString()).emit('waterNowDevice');
         }else {
-            console.log('that is not connected');
+            socket.emit('deviceNotConnected');
         }
     });
 
