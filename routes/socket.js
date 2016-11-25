@@ -82,8 +82,13 @@ io.on('connection', function (socket) {
 
     // 일회성 물주기 이벤트.. 안드로이드에서 waterNow라는 이벤트를 deviceId와 함께 보내준다.
     socket.on('waterNow', function(deviceId) {
+        console.log('waterNow!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+        
         if(deviceMap.has(deviceId.toString())) {
+            // 접속중인 라즈베리파이에 이벤트 emit..
             deviceMap.get(deviceId.toString()).emit('waterNowDevice');
+
+            // 안드로이드에 emit
             socket.emit('waterNowSuccess');
         }else {
             socket.emit('waterNowFail');
