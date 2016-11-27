@@ -123,6 +123,14 @@ io.on('connection', function (socket) {
         console.log('modifyWateringInfo!!!!!!!!!!');
     });
 
+    // 안드로이드에서 라즈베리파이 기기의 접속 체크
+    socket.on('checkDeviceConnected', function(deviceId) {
+        if(deviceMap.has(deviceId.toString())) {
+            socket.emit('checkDeviceConnectedRes', true);
+        }else {
+            socket.emit('checkDeviceConnectedRes', false);
+        }
+    });
 
     // 접속 끊겼을 때
     socket.on('disconnect', function(){
