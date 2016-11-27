@@ -109,7 +109,16 @@ io.on('connection', function (socket) {
     socket.on('modifyWateringInfo', function(deviceId) {
         if(deviceMap.has(deviceId.toString())) {
             // 접속중인 라즈베리파이에 이벤트 emit..
-            deviceMap.get(deviceId.toString()).emit('updateWateringInfo');   
+            const getWateringInfoByDeviceIdQUERY = ("SELECT deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute, status FROM WateringInfo WHERE deviceId = ?");
+            const queryParams = [deviceId];
+            //console.log(queryParams);
+            connection.query(getWateringInfoByDeviceIdQUERY, queryParams, function(err, rows, fields) {
+                if(err) {
+                        throw err;
+                }
+                deviceMap.get(deviceId.toString()).emit('updateWateringInfo', rows[0]);   
+            });
+            
         }
         console.log('modifyWateringInfo!!!!!!!!!!');
     });
