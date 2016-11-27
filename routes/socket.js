@@ -26,7 +26,7 @@ io.on('connection', function (socket) {
         deviceMap.set(deviceId.toString(), socket);
 
         // device가 접속 중임을 데이터베이스에 저장한다.
-		//updateDeviceConnected(deviceId, 1);
+		updateDeviceConnected(deviceId, 1);
 	});
 
     // 핸드폰 접속
@@ -41,7 +41,7 @@ io.on('connection', function (socket) {
         var intervalId = setInterval(function(){
             if(socket.connected) {
                 // var deviceInfo = getDeviceInfoByDeviceId(deviceId);
-                const getDeviceInfoByDeviceIdQUERY = ("SELECT deviceId, deviceName, temperature, humidity, light, waterHeight FROM Devices WHERE deviceId = ?");
+                const getDeviceInfoByDeviceIdQUERY = ("SELECT deviceId, deviceName, temperature, humidity, light, waterHeight, connected FROM Devices WHERE deviceId = ?");
                 const queryParams = [deviceId];
                 //console.log(queryParams);
                 connection.query(getDeviceInfoByDeviceIdQUERY, queryParams, function(err, rows, fields) {
@@ -223,23 +223,4 @@ function updateDeviceConnected(deviceId, connected) {
         }
     });
 }
-
-
-
-/*
-// 기기id로 기기 정보 조회
-const getDeviceInfoByDeviceIdQUERY = ("SELECT deviceId, deviceName, temperature, humidity, light, waterHeight FROM Devices WHERE deviceId = ?");
-
-function getDeviceInfoByDeviceId(deviceId) {
-    const queryParams = [deviceId];
-    //console.log(queryParams);
-    connection.query(getDeviceInfoByDeviceIdQUERY, queryParams, function(err, rows, fields) {
-        if(err) {
-                throw err;
-        }
-        console.log('row='+rows[0]);
-        return rows[0];
-    });
-}
-*/
 

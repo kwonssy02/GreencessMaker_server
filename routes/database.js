@@ -52,7 +52,7 @@ function getWateringHistories(req, res, next) {
 
 // 아이디별 기기 리스트 조회
 const getDevicesByUserIdURL = ("/getDevicesByUserId/:userId");
-const getDevicesByUserIdQUERY = ("SELECT deviceId, deviceName FROM Devices WHERE deviceId IN (SELECT deviceId FROM DeviceMatching WHERE userId = ?) ORDER BY deviceName DESC");
+const getDevicesByUserIdQUERY = ("SELECT deviceId, deviceName, connected FROM Devices WHERE deviceId IN (SELECT deviceId FROM DeviceMatching WHERE userId = ?) ORDER BY deviceName DESC");
 
 router.get(getDevicesByUserIdURL, getDevicesByUserId);
 function getDevicesByUserId(req, res, next) {
@@ -71,7 +71,7 @@ function getDevicesByUserId(req, res, next) {
 
 // 기기id로 기기 정보 조회
 const getDeviceInfoByDeviceIdURL = ("/getDeviceInfoByDeviceId/:deviceId");
-const getDeviceInfoByDeviceIdQUERY = ("SELECT deviceId, deviceName, temperature, humidity, light, waterHeight FROM Devices WHERE deviceId = ?");
+const getDeviceInfoByDeviceIdQUERY = ("SELECT deviceId, deviceName, temperature, humidity, light, waterHeight, connected FROM Devices WHERE deviceId = ?");
 
 router.get(getDeviceInfoByDeviceIdURL, getDeviceInfoByDeviceId);
 function getDeviceInfoByDeviceId(req, res, next) {
