@@ -75,9 +75,17 @@ io.on('connection', function (socket) {
         
     });
 
-    // 물주기 알람 조회
-    socket.on('wateringInfo', function(data) {
-        
+    // 라즈베리파이에서 물주기 알람 조회
+    socket.on('requestWateringInfo', function(deviceId) {
+        const getWateringInfoByDeviceIdQUERY = ("SELECT deviceId, mon, tue, wed, thur, fri, sat, sun, amount, hour, minute, status FROM WateringInfo WHERE deviceId = ?");
+        const queryParams = [deviceId];
+        //console.log(queryParams);
+        connection.query(getWateringInfoByDeviceIdQUERY, queryParams, function(err, rows, fields) {
+            if(err) {
+                    throw err;
+            }
+            socket.emit('respondWateringInfo', rows[0]);
+        });
     });
 
     // 일회성 물주기 이벤트.. 안드로이드에서 waterNow라는 이벤트를 deviceId와 함께 보내준다.
@@ -97,10 +105,14 @@ io.on('connection', function (socket) {
         }
     });
 
-
-
-
-
+    // 안드로이드에서 알람 수정시
+    socket.on('modifyWateringInfo', function(deviceId) {
+        if(deviceMap.has(deviceId.toString())) {
+            // 접속중인 라즈베리파이에 이벤트 emit..
+            deviceMap.get(deviceId.toString()).emit('updateWateringInfo');   
+        }
+        console.log('modifyWateringInfo!!!!!!!!!!');
+    });
 
 
     // 접속 끊겼을 때
@@ -194,6 +206,7 @@ function updateDeviceConnected(deviceId, connected) {
         }
     });
 }
+
 
 
 /*
