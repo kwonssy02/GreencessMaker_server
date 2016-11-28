@@ -294,7 +294,7 @@ function changeWateringInfoStatus(req, res, next) {
 // input  : deviceId
 // output : deviceId, imageId
 const getImagesByDeviceIdURL = ("/getImagesByDeviceId/:deviceId");
-const getImagesByDeviceIdQUERY = ("SELECT deviceId, imageId, date FROM Images WHERE deviceId = ? ORDER BY imageId DESC");
+const getImagesByDeviceIdQUERY = ("SELECT deviceId, imageId, date_format(date, '%Y년 %m월 %d일 %H시 %i분') as date FROM Images WHERE deviceId = ? ORDER BY imageId DESC");
 
 router.get(getImagesByDeviceIdURL, getImagesByDeviceId);
 function getImagesByDeviceId(req, res, next) {
