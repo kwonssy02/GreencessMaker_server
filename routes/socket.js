@@ -60,6 +60,7 @@ io.on('connection', function (socket) {
 
     // 라즈베리파이 디바이스 정보 업데이트
 	socket.on('updateDeviceInfo', function (deviceInfo) {
+        console.log('updateDeviceInfo!!!');
 		updateDeviceInfo(deviceInfo);
 	});
 
