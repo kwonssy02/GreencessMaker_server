@@ -52,7 +52,7 @@ function getWateringHistories(req, res, next) {
 
 // 기기 데이터 히스토리 조회
 const getDeviceHistoriesURL = ("/getDeviceHistories/:deviceId");
-const getDeviceHistoriesQUERY = ("SELECT deviceId, deviceName, temperature, humidity, light, waterHeight FROM DeviceHistory WHERE deviceId = ?");
+const getDeviceHistoriesQUERY = ("SELECT deviceId, deviceName, temperature, humidity, light, waterHeight, year, month, day, hour, minute FROM DeviceHistory WHERE deviceId = ?");
 
 router.get(getDeviceHistoriesURL, getDeviceHistories);
 function getDeviceHistories(req, res, next) {
