@@ -50,6 +50,25 @@ function getWateringHistories(req, res, next) {
     });
 }
 
+// 기기 데이터 히스토리 조회
+const getDeviceHistoriesURL = ("/getDeviceHistories/:deviceId");
+const getDeviceHistoriesQUERY = ("SELECT deviceId, deviceName, temperature, humidity, light, waterHeight FROM DeviceHistory WHERE deviceId = ?");
+
+router.get(getDeviceHistoriesURL, getDeviceHistories);
+function getDeviceHistories(req, res, next) {
+    const deviceId = req.params.deviceId;
+    const queryParams = [deviceId];
+    //console.log(queryParams);
+    connection.query(getDeviceHistoriesQUERY, queryParams, function(err, rows, fields) {
+        if(err) {
+                throw err;
+        }
+        
+        res.json(rows);
+        
+    });
+}
+
 // 아이디별 기기 리스트 조회
 const getDevicesByUserIdURL = ("/getDevicesByUserId/:userId");
 const getDevicesByUserIdQUERY = ("SELECT deviceId, deviceName, connected FROM Devices WHERE deviceId IN (SELECT deviceId FROM DeviceMatching WHERE userId = ?) ORDER BY deviceName DESC");
